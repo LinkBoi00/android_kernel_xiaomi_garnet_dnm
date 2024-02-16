@@ -1467,16 +1467,12 @@ static int fts_power_source_ctrl(struct fts_ts_data *ts_data, int enable)
                 FTS_ERROR("enable vdd regulator failed,ret=%d", ret);
             }
 
-            //msleep(1);
             FTS_ERROR("ts_data->pdata->iovdd_gpio=%d", ts_data->pdata->iovdd_gpio);
-            gpio_direction_output(ts_data->pdata->iovdd_gpio, 1);
             ret = regulator_enable(ts_data->iovdd);
             if (ret) {
                 FTS_ERROR("enable iovdd regulator failed,ret=%d", ret);
             }
 
-            msleep(1);
-            gpio_direction_output(ts_data->pdata->reset_gpio, 1);
 
 #if 0
             if (!IS_ERR_OR_NULL(ts_data->vcc_i2c)) {
@@ -1491,10 +1487,7 @@ static int fts_power_source_ctrl(struct fts_ts_data *ts_data, int enable)
     } else {
         if (!ts_data->power_disabled) {
             FTS_DEBUG("regulator disable !");
-            gpio_direction_output(ts_data->pdata->reset_gpio, 0);
 
-            msleep(1);
-            gpio_direction_output(ts_data->pdata->iovdd_gpio, 0);
             ret = regulator_disable(ts_data->iovdd);
             if (ret) {
                 FTS_ERROR("disable iovdd regulator failed,ret=%d", ret);
