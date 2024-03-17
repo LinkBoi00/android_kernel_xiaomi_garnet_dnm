@@ -39,6 +39,7 @@
 #if IS_ENABLED(CONFIG_DRM)
 #if IS_ENABLED(CONFIG_DRM_PANEL)
 #include <drm/drm_panel.h>
+#include "mi_disp_notifier.h"
 #else
 #include <linux/msm_drm_notify.h>
 #endif //CONFIG_DRM_PANEL
@@ -2029,7 +2030,7 @@ static void fts_resume_work(struct work_struct *work)
 static int fb_notifier_callback(struct notifier_block *nb,
                 unsigned long val, void *data)
 {
-#if IS_ENABLED(CONFIG_MI_DISP_NOTIFIER)
+#if IS_ENABLED(CONFIG_DRM)
     struct fts_ts_data *ts_data = container_of(nb, struct fts_ts_data, fb_notif);
     struct mi_disp_notifier *evdata = data;
     unsigned int blank;
@@ -2077,7 +2078,7 @@ static int fts_notifier_callback_init(struct fts_ts_data *ts_data)
 
     ts_data->fb_notif.notifier_call = fb_notifier_callback;
 
-#if IS_ENABLED(CONFIG_MI_DISP_NOTIFIER)
+#if IS_ENABLED(CONFIG_DRM)
     mi_disp_register_client(&ts_data->fb_notif);
 #endif
 
