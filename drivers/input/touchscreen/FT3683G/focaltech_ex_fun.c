@@ -1235,8 +1235,6 @@ int fts_remove_sysfs(struct fts_ts_data *ts_data)
 }
 
 /*****************************************************************************/
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 start */
-#include <linux/hqsysfs.h>
 struct proc_dir_entry *tp_lockdown_info_proc;
 struct proc_dir_entry *tp_info_proc;
 struct proc_dir_entry *tp_data_dump_proc;
@@ -1334,7 +1332,6 @@ int fts_ts_hw_info(struct fts_ts_data *ts_data)
 
     buf[strlen(buf)+1] = '\0';
     FTS_INFO("hw_info: %s", buf);
-    hq_regiser_hw_info(HWID_CTP, buf);
 
     return 0;
 }
@@ -1419,5 +1416,4 @@ int fts_remove_procfs(struct fts_ts_data *ts_data)
     }
     return 0;
 }
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 end */
 /*****************************************************************************/
