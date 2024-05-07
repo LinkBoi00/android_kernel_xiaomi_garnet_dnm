@@ -440,6 +440,8 @@ static int fts_ts_probe(struct spi_device *spi)
     int ret = 0;
     struct fts_ts_data *ts_data = NULL;
 
+    FTS_FUNC_ENTER();
+
     FTS_INFO("Touch Screen(SPI-2 BUS) driver prboe...");
     spi->mode = SPI_MODE_0;
     spi->bits_per_word = 8;
@@ -475,6 +477,8 @@ static int fts_ts_probe(struct spi_device *spi)
     }
 
     FTS_INFO("Touch Screen(SPI BUS) driver prboe successfully");
+    FTS_FUNC_EXIT();
+
     return 0;
 }
 
@@ -523,7 +527,7 @@ static const struct spi_device_id fts_ts_id[] = {
     {},
 };
 static const struct of_device_id fts_dt_match[] = {
-    {.compatible = "focaltech,fts", },
+    {.compatible = "focaltech,n16-3683g-spi", },
     {},
 };
 MODULE_DEVICE_TABLE(of, fts_dt_match);
