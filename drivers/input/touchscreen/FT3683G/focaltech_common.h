@@ -181,7 +181,6 @@ struct ts_ic_info {
 /*****************************************************************************
 * DEBUG function define here
 *****************************************************************************/
-#if FTS_DEBUG_EN
 #define FTS_DEBUG(fmt, args...) do { \
     printk("[FTS_TS]%s:"fmt"\n", __func__, ##args); \
 } while (0)
@@ -193,11 +192,6 @@ struct ts_ic_info {
 #define FTS_FUNC_EXIT() do { \
     printk("[FTS_TS]%s: Exit(%d)\n", __func__, __LINE__); \
 } while (0)
-#else /* #if FTS_DEBUG_EN*/
-#define FTS_DEBUG(fmt, args...)
-#define FTS_FUNC_ENTER()
-#define FTS_FUNC_EXIT()
-#endif
 
 #define FTS_INFO(fmt, args...) do { \
     printk(KERN_INFO "[FTS_TS/I]%s:"fmt"\n", __func__, ##args); \

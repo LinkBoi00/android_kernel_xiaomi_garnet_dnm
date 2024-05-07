@@ -495,9 +495,6 @@ void fts_release_all_finger(void)
     for (finger_count = 0; finger_count < max_touches; finger_count++) {
         input_mt_slot(input_dev, finger_count);
         input_mt_report_slot_state(input_dev, MT_TOOL_FINGER, false);
-        /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */
-        last_touch_events_collect(finger_count, 0);
-        /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
     }
 #else
     input_mt_sync(input_dev);
@@ -595,17 +592,11 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
                           events[i].id, events[i].x, events[i].y,
                           events[i].p, events[i].area);
             }
-            /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */
-            last_touch_events_collect(events[i].id, 1);
-            /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
         } else {
             input_mt_slot(input_dev, events[i].id);
             input_mt_report_slot_state(input_dev, MT_TOOL_FINGER, false);
             touch_point_pre &= ~(1 << events[i].id);
             if (ts_data->log_level >= 1) FTS_DEBUG("[B]P%d UP!", events[i].id);
-            /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */
-            last_touch_events_collect(events[i].id, 0);
-            /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
         }
     }
 
@@ -615,9 +606,6 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
                 if (ts_data->log_level >= 1) FTS_DEBUG("[B]P%d UP!", i);
                 input_mt_slot(input_dev, i);
                 input_mt_report_slot_state(input_dev, MT_TOOL_FINGER, false);
-                /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */
-                last_touch_events_collect(i, 0);
-                /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
             }
         }
     }
@@ -1925,14 +1913,6 @@ static int fts_ts_suspend(struct device *dev)
         return 0;
     }
 
-    /* N17 code for HQ-290835 by liunianliang at 2023/6/12 start */
-    if (ts_data->palm_sensor_switch) {
-        FTS_INFO("palm sensor ON, switch to OFF");
-        update_palm_sensor_value(0);
-        fts_palm_sensor_cmd(0);
-    }
-    /* N17 code for HQ-290835 by liunianliang at 2023/6/12 end */
-
     fts_esdcheck_suspend(ts_data);
 
     /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */
@@ -2102,17 +2082,6 @@ static int fts_read_palm_data(void)
         return -EINVAL;
     }
 
-    if (reg_value == 0x01) {
-        update_palm_sensor_value(1);
-
-        input_report_key(fts_data->input_dev, FTS_PALM_KEYCODE, 1);
-        input_sync(fts_data->input_dev);
-        input_report_key(fts_data->input_dev, FTS_PALM_KEYCODE, 0);
-        input_sync(fts_data->input_dev);
-    } else if (reg_value == 0x00) {
-        update_palm_sensor_value(0);
-    }
-
     if (reg_value == 0x01)
         FTS_INFO("update palm data:0x%02X", reg_value);
 
@@ -2199,7 +2168,6 @@ static void fts_init_xiaomi_touchfeature(struct fts_ts_data *ts_data)
     xiaomi_touch_interfaces.touch_vendor_read = fts_touch_vendor_read;
     /* N17 code for HQ-299728 by liunianliang at 2023/6/15 end */
 
-    xiaomitouch_register_modedata(0, &xiaomi_touch_interfaces);
 }
 /* N17 code for HQ-290835 by liunianliang at 2023/6/12 end */
 
