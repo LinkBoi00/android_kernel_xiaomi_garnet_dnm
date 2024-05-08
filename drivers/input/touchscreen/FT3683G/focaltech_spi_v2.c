@@ -55,9 +55,6 @@
 /*****************************************************************************
 * Static variables
 *****************************************************************************/
-/* N17 code for HQ-310974 by xionglei6 at 2023/08/14 start */
-const char* tp_vendor = NULL;
-/* N17 code for HQ-310974 by xionglei6 at 2023/08/14 end */
 
 /*****************************************************************************
 * Global variable or extern global variabls/functions
@@ -466,9 +463,6 @@ static int fts_ts_probe(struct spi_device *spi)
     ts_data->bus_type = BUS_TYPE_SPI;
     ts_data->bus_ver = BUS_VER_V2;
     ts_data->dummy_byte = SPI_DUMMY_BYTE;
-    /* N17 code for HQ-291087 by liunianliang at 2023/5/29 start */
-    snprintf(ts_data->vendor, 32, tp_vendor);
-    /* N17 code for HQ-291087 by liunianliang at 2023/5/29 end */
 
     spi_set_drvdata(spi, ts_data);
 
@@ -567,15 +561,11 @@ static int __init fts_ts_spi_init(void)
 {
     int ret = 0;
 
-    FTS_FUNC_ENTER();
-
-    tp_vendor = FTS_MODULE2_NAME; // Hardcode it to TianMa but there is GVO as well
-    
+    FTS_FUNC_ENTER();    
     ret = spi_register_driver(&fts_ts_spi_driver);
     if ( ret != 0 ) {
         FTS_ERROR("Focaltech touch screen driver init failed!");
     }
-
     FTS_FUNC_EXIT();
 
     return ret;
