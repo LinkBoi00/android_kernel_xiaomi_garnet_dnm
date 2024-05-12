@@ -35,31 +35,22 @@
 #include <linux/of_device.h>
 #include <linux/of_gpio.h>
 #include <linux/of_irq.h>
+#include <linux/notifier.h>
+#include <linux/backlight.h>
 
-#if IS_ENABLED(CONFIG_DRM)
-#if IS_ENABLED(CONFIG_DRM_PANEL)
+#if defined(CONFIG_DRM)
+#include <linux/soc/qcom/panel_event_notifier.h>
 #include <drm/drm_panel.h>
-#else
-#include <linux/msm_drm_notify.h>
-#endif //CONFIG_DRM_PANEL
-
-#elif IS_ENABLED(CONFIG_FB)
+#elif defined(CONFIG_FB)
 #include <linux/notifier.h>
 #include <linux/fb.h>
-#endif //CONFIG_DRM
-#include "focaltech_core.h"
+#endif
 
-#include "../../../gpu/drm/mediatek/mediatek_v2/mtk_disp_notify.h"
+#include "focaltech_core.h"
 
 /* N17 code for HQ-290835 by liunianliang at 2023/6/12 start */
 #include "../xiaomi/xiaomi_touch.h"
 /* N17 code for HQ-290835 by liunianliang at 2023/6/12 end */
-
-/* N17 code for HQ-301859 by liunianliang at 2023/06/30 start */
-#if IS_ENABLED(CONFIG_MI_DISP_NOTIFIER)
-#include "../../../gpu/drm/mediatek/mediatek_v2/mi_disp/mi_disp_notifier.h"
-#endif
-/* N17 code for HQ-301859 by liunianliang at 2023/06/30 end */
 
 /*****************************************************************************
 * Private constant and macro definitions using #define
@@ -79,6 +70,9 @@
 * Global variable or extern global variabls/functions
 *****************************************************************************/
 struct fts_ts_data *fts_data;
+#if defined(CONFIG_DRM)
+static struct drm_panel *active_panel;
+#endif
 
 /*****************************************************************************
 * Static function prototypes
@@ -99,6 +93,12 @@ static void fts_palm_mode_recovery(struct fts_ts_data *ts_data);
 /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */
 static void fts_game_mode_recovery(struct fts_ts_data *ts_data);
 /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
+
+#if defined(CONFIG_DRM)
+static void fts_drm_panel_notifier_callback(enum panel_event_notifier_tag tag,
+				struct panel_event_notification *notification,
+				void *client_data);
+#endif
 
 int fts_check_cid(struct fts_ts_data *ts_data, u8 id_h)
 {
@@ -1897,7 +1897,7 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
     return 0;
 }
 
-static int fts_ts_suspend(struct device *dev)
+static int __maybe_unused fts_ts_suspend(struct device *dev)
 {
     int ret = 0;
     struct fts_ts_data *ts_data = fts_data;
@@ -2006,7 +2006,7 @@ static void fts_resume_work(struct work_struct *work)
     fts_ts_resume(ts_data->dev);
 }
 
-/* N17 code for HQ-301859 by liunianliang at 2023/06/30 start */
+/* 
 static int fb_notifier_callback(struct notifier_block *nb,
                 unsigned long val, void *data)
 {
@@ -2050,16 +2050,137 @@ static int fb_notifier_callback(struct notifier_block *nb,
 #endif
     return 0;
 }
+*/
+
+#if defined(CONFIG_DRM)
+/**
+ * pointer active_panel initlized function, used to checkout panel(config)from devices
+ * tree ,later will be passed to drm_notifyXXX function.
+ * @param device node contains the panel
+ * @return pointer to that panel if panel truely  exists, otherwise negative number
+ */
+
+static int fts_ts_check_panel(struct device_node *np)
+{
+	int i;
+	int count;
+	struct device_node *node;
+	struct drm_panel *panel;
+
+	count = of_count_phandle_with_args(np, "panel", NULL);
+	if (count <= 0)
+		return -ENODEV;
+
+	for (i = 0; i < count; i++) {
+		node = of_parse_phandle(np, "panel", i);
+		panel = of_drm_find_panel(node);
+		of_node_put(node);
+		if (!IS_ERR(panel)) {
+			active_panel = panel;
+			return 0;
+		} else {
+			active_panel = NULL;
+		}
+	}
+
+	return PTR_ERR(panel);
+}
+
+static void fts_register_panel_notifier_work(struct work_struct *work)
+{
+	struct fts_ts_data *data = container_of(
+		work, struct fts_ts_data, panel_notifier_register_work.work);
+	struct device_node *dp = data->client->dev.of_node;
+	int error;
+	static int check_count = 0;
+
+	FTS_ERROR("Start register panel notifier");
+
+	error = fts_ts_check_panel(dp);
+
+	if (!dp || !active_panel) {
+		FTS_ERROR("Failed to register panel notifier, try again");
+		if (check_count++ < 5)
+			schedule_delayed_work(
+				&fts_data->panel_notifier_register_work,
+				msecs_to_jiffies(5000));
+		else {
+			FTS_ERROR("Failed to register panel notifier, not try");
+		}
+		return;
+	}
+
+	if (active_panel) {
+		fts_data->notifier_cookie = panel_event_notifier_register(
+			PANEL_EVENT_NOTIFICATION_PRIMARY,
+			PANEL_EVENT_NOTIFIER_CLIENT_PRIMARY_TOUCH, active_panel,
+			&fts_drm_panel_notifier_callback, (void *)fts_data);
+		if (!fts_data->notifier_cookie) {
+			FTS_ERROR("Failed to register for panel events");
+		}
+	}
+}
+
+static void fts_drm_panel_notifier_callback(enum panel_event_notifier_tag notifier_tag,
+				struct panel_event_notification *notification,
+				void *client_data)
+{
+	struct fts_ts_data *data = client_data;
+
+	if (!notification) {
+		FTS_ERROR("Invalid notification");
+		return;
+	}
+
+	FTS_INFO("Notification type:%d, early_trigger:%d", notification->notif_type, notification->notif_data.early_trigger);
+
+	switch (notification->notif_type) {
+	case DRM_PANEL_EVENT_UNBLANK:
+        FTS_INFO("FB_BLANK_UNBLANK");
+        flush_workqueue(fts_data->ts_workqueue);
+        queue_work(fts_data->ts_workqueue, &fts_data->resume_work);
+		break;
+	case DRM_PANEL_EVENT_BLANK:
+	case DRM_PANEL_EVENT_BLANK_LP:
+		if (notification->notif_data.early_trigger == 0) {
+			FTS_INFO("FB_BLANK %s", notification->notif_type == DRM_PANEL_EVENT_BLANK_LP ? "POWER DOWN" : "LP");
+            cancel_work_sync(&fts_data->resume_work);
+            fts_ts_suspend(data->dev);
+		}
+		break;
+	case DRM_PANEL_EVENT_FPS_CHANGE:
+		FTS_INFO("shashank:Received fps change old fps:%d new fps:%d", notification->notif_data.old_fps, notification->notif_data.new_fps);
+        break;
+	default:
+		FTS_INFO("notification serviced :%d", notification->notif_type);
+		break;
+	}
+}
+#endif
 
 static int fts_notifier_callback_init(struct fts_ts_data *ts_data)
 {
     int ret = 0;
     FTS_FUNC_ENTER();
 
-    ts_data->fb_notif.notifier_call = fb_notifier_callback;
+#if defined(CONFIG_DRM)
+	INIT_DELAYED_WORK(&ts_data->panel_notifier_register_work,
+			  fts_register_panel_notifier_work);
 
-#if IS_ENABLED(CONFIG_MI_DISP_NOTIFIER)
-    mi_disp_register_client(&ts_data->fb_notif);
+	ret = fts_ts_check_panel(ts_data->spi->dev.of_node);
+	if (!active_panel) {
+		FTS_ERROR("Can't find panel");
+		schedule_delayed_work(&ts_data->panel_notifier_register_work,
+				      msecs_to_jiffies(5000));
+	} else {
+		ts_data->notifier_cookie = panel_event_notifier_register(
+			PANEL_EVENT_NOTIFICATION_PRIMARY,
+			PANEL_EVENT_NOTIFIER_CLIENT_PRIMARY_TOUCH, active_panel,
+			&fts_drm_panel_notifier_callback, (void *)ts_data);
+		if (!ts_data->notifier_cookie) {
+			FTS_ERROR("Failed to register for panel events");
+		}
+	}
 #endif
 
     FTS_FUNC_EXIT();
@@ -2171,19 +2292,16 @@ static void fts_init_xiaomi_touchfeature(struct fts_ts_data *ts_data)
 }
 /* N17 code for HQ-290835 by liunianliang at 2023/6/12 end */
 
-/* N17 code for HQ-301859 by liunianliang at 2023/06/30 start */
 static int fts_notifier_callback_exit(struct fts_ts_data *ts_data)
 {
     FTS_FUNC_ENTER();
 
-#if IS_ENABLED(CONFIG_MI_DISP_NOTIFIER)
-    mi_disp_unregister_client(&ts_data->fb_notif);
-#endif
+	if (active_panel && ts_data->notifier_cookie)
+		panel_event_notifier_unregister(ts_data->notifier_cookie);
 
     FTS_FUNC_EXIT();
     return 0;
 }
-/* N17 code for HQ-301859 by liunianliang at 2023/06/30 end */
 
 int fts_ts_probe_entry(struct fts_ts_data *ts_data)
 {
