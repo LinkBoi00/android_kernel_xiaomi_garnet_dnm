@@ -290,8 +290,9 @@ struct fts_ts_data {
     struct pinctrl_state *pins_release;
 #endif
 
-	void *notifier_cookie;
+    struct notifier_block notifier;
 	struct delayed_work panel_notifier_register_work;
+	void *notifier_cookie;
 
     /* N17 code for HQ-291087 by liunianliang at 2023/5/29 start */
     char vendor[32];
