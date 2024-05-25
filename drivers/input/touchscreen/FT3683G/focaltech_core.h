@@ -296,7 +296,12 @@ struct fts_ts_data {
 	struct pinctrl_state *pins_release;
 #endif
 
+#if IS_ENABLED(CONFIG_QCOM_PANEL_EVENT_NOTIFIER)
+	void *notifier_cookie;
+	struct delayed_work panel_notifier_register_work;
+#elif IS_ENABLED(CONFIG_FB)
 	struct notifier_block fb_notif;
+#endif
 };
 
 
