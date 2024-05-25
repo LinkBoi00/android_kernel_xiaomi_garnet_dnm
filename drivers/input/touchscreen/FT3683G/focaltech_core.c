@@ -1748,9 +1748,8 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
 	}
 
 	/* reset, irq gpio info */
-	//pdata->reset_gpio = of_get_named_gpio_flags(np, "focaltech,reset-gpio",
-	//					0, &pdata->reset_gpio_flags);
-        pdata->reset_gpio = tp_reset_gpio;
+	pdata->reset_gpio = of_get_named_gpio_flags(np, "focaltech,reset-gpio",
+						0, &pdata->reset_gpio_flags);
 	if (pdata->reset_gpio < 0)
 		FTS_ERROR("Unable to get reset_gpio");
 

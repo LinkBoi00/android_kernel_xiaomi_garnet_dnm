@@ -173,43 +173,6 @@ static int fts_ft5008_flash_write_buf(u32 saddr, u8 *buf, u32 len, u32 delay)
     return ecc_in_host;
 }
 
-/* N17 code for HQ-329479 by huangshiquan at 2023/09/16 start */
-void fts_spidebug_recovery(void)
-{
-	u8 cmd_0[] = {0x70, 0x55, 0xaa};
-	u8 cmd_1[] = {0x70, 0x04, 0xfb, 0x80, 0x07, 0x00, 0x00};
-	u8 cmd_2[] = {0x71, 0x00, 0x00, 0x00, 0x00};
-	u8 cmd_3[] = {0x70, 0x07, 0xf8, 0x00, 0x07, 0x00, 0x00, 0x5a, 0x5a, 0x00, 0x00};
-	u8 cmd_4[] = {0x70, 0x0a, 0xf5};
-	u8 id[3] = {0};
-	int i = 0;
-	int retry_num = 3;
-
-	for(i = 0; i < retry_num; i++) {
-		fts_reset_proc(0);
-		mdelay(2);
-
-		fts_bus_transfer_direct(cmd_0, sizeof(cmd_0)/sizeof(cmd_0[0]), NULL, 0);
-		msleep(1);
-		fts_bus_transfer_direct(cmd_1, sizeof(cmd_1)/sizeof(cmd_1[0]), NULL, 0);
-		msleep(1);
-		fts_bus_transfer_direct(cmd_2, sizeof(cmd_2)/sizeof(cmd_2[0]), NULL, 0);
-		msleep(1);
-		fts_bus_transfer_direct(cmd_3, sizeof(cmd_3)/sizeof(cmd_3[0]), NULL, 0);
-		msleep(1);
-		fts_bus_transfer_direct(cmd_4, sizeof(cmd_4)/sizeof(cmd_4[0]), NULL, 0);
-
-		msleep(20);
-		id[0] = 0x90;
-		fts_read(id, 1, &id[1], 2);
-		if(id[1] == 0x36 && id[2] == 0xB3) {
-			break;
-		}
-		msleep(10);
-	}
-}
-/* N17 code for HQ-329479 by huangshiquan at 2023/09/16 end */
-
 /************************************************************************
 * Name: fts_ft5008_upgrade
 * Brief:
@@ -300,37 +263,8 @@ fw_reset:
     if (ret < 0) {
         FTS_ERROR("reset to normal boot fail");
     }
-/* N17 code for HQ-329479 by huangshiquan at 2023/09/16 start */
-    fts_spidebug_recovery();
-/* N17 code for HQ-329479 by huangshiquan at 2023/09/16 end */
     return -EIO;
 }
-
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 start */
-int fts_read_lockdown_info(u8 *buf)
-{
-    u32 lockdown_addr = 0x3F000;
-    int ret = 0;
-    u8 lockdown_info[0x20] = {0};
-    int count = 0;
-
-    ret = fts_flash_read(lockdown_addr, lockdown_info, sizeof(lockdown_info));
-    if (ret < 0) {
-        FTS_ERROR("fail to read lockdown info from tp");
-        return ret;
-    }
-
-    count += sprintf(buf + count, "0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x",
-        lockdown_info[0], lockdown_info[1], lockdown_info[2], lockdown_info[3],
-        lockdown_info[4], lockdown_info[5], lockdown_info[6], lockdown_info[7]);
-
-    FTS_INFO("read lockdown info: %s\n", lockdown_info);
-    FTS_INFO("read lockdown info: %s\n", buf);
-    //memcpy(buf, lockdown_info, sizeof(lockdown_info));
-
-    return 0;
-}
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 end */
 
 struct upgrade_func upgrade_func_ft5008 = {
     .ctype = {0x8C, 0x8D, 0x8E, 0x90},
