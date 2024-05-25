@@ -291,8 +291,8 @@
  * FTS_GET_MODULE_NUM >= 2, compatible with FTS_MODULE2_ID
  * FTS_GET_MODULE_NUM >= 3, compatible with FTS_MODULE3_ID
  */
-#define FTS_MODULE_ID				0x44
-#define FTS_MODULE2_ID				0xda
+#define FTS_MODULE_ID				0x5F
+#define FTS_MODULE2_ID				0x8D
 #define FTS_MODULE3_ID				0x0000
 /*
  * Need set the following when get firmware via firmware_request()
@@ -302,8 +302,8 @@
  * You should rename fw to "focaltech_ts_fw_tianma", and push it into
  * etc/firmware or by customers
  */
-#define FTS_MODULE_NAME				"vnx"
-#define FTS_MODULE2_NAME			"boe"
+#define FTS_MODULE_NAME				"GVO"
+#define FTS_MODULE2_NAME			"TianMa"
 #define FTS_MODULE3_NAME			""
 
 /*
@@ -311,12 +311,12 @@
  * define your own fw_file, the sample one to be replaced is invalid
  * NOTE: if FTS_GET_MODULE_NUM > 1, it's the fw corresponding with FTS_VENDOR_ID
  */
-#define FTS_UPGRADE_FW_FILE			"include/firmware/VXN_FT368x_Ref_V2A_D05_20240204_app.i"
+#define FTS_UPGRADE_FW_FILE			"include/firmware/fw_sample.i"
 /*
  * if FTS_GET_MODULE_NUM >= 2, fw corrsponding with FTS_VENDOR_ID2
  * define your own fw_file, the sample one is invalid
  */
-#define FTS_UPGRADE_FW2_FILE			"include/firmware/BOE_FT368x_Ref_V8A_D05_20240204_app.i"
+#define FTS_UPGRADE_FW2_FILE			"include/firmware/fw_sample.i"
 
 /*
  * if FTS_GET_MODULE_NUM >= 3, fw corrsponding with FTS_VENDOR_ID3

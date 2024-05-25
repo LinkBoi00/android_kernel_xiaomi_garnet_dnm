@@ -10,4 +10,4 @@ ft3683g-y := focaltech_core.o \
 ft3683g-y += focaltech_spi_v2.o
 ft3683g-y += focaltech_proximity.o
 ft3683g-y += focaltech_flash.o
-ft3683g-y += focaltech_flash/focaltech_upgrade_ft3681.o
+ft3683g-y += focaltech_flash/focaltech_upgrade_ft3683g.o
