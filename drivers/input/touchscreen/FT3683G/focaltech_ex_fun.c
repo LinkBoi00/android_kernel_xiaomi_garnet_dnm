@@ -1220,12 +1220,10 @@ static ssize_t fts_fod_store(
 	if (FTS_SYSFS_ECHO_ON(buf)) {
 		FTS_DEBUG("enable fod");
 		ts_data->fod_support = ENABLE;
-		tp_gesture_flag = ENABLE;
 	} else if (FTS_SYSFS_ECHO_OFF(buf)) {
 		FTS_DEBUG("disable fod");
 		ts_data->fod_support = DISABLE;
-		if (ts_data->gesture_support == DISABLE)
-			tp_gesture_flag = DISABLE;
+
 	}
 	mutex_unlock(&ts_data->input_dev->mutex);
 	return count;

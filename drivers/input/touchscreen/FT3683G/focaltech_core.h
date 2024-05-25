@@ -425,6 +425,4 @@ int fts_proximity_resume(void);
 int fts_proximity_recovery(struct fts_ts_data *ts_data);
 #endif
 
-extern int tp_gesture_flag;
-
 #endif /* __LINUX_FOCALTECH_CORE_H__ */
