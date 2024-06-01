@@ -170,6 +170,12 @@ static int fts_set_cur_value(int mode, int value)
         return -1;
     }
     FTS_INFO("touch mode:%d, value:%d", mode, value);
+    
+    if (mode == THP_FOD_DOWNUP_CTL && value >= 0) {
+        FTS_INFO("Mode:FOD  fod_status = %d", value);
+        update_fod_press_status(value);
+        return 0;
+    }
     if (mode >= Touch_Mode_NUM) {
         FTS_ERROR("mode is error:%d", mode);
         return -EINVAL;
