@@ -132,9 +132,6 @@ static void fts_update_touchmode_data(struct fts_ts_data *ts_data)
                 mode, mode_set_value, mode_addr);
             xiaomi_touch_interfaces.touch_mode[mode][GET_CUR_VALUE] =
                 xiaomi_touch_interfaces.touch_mode[mode][SET_CUR_VALUE];
-	    /* N17 code for HQ-310258 by zhangzhijian5 at 2023/7/29 start */
-            fts_touch_hdle_mode_set(fts_data->gamemode_enabled);
-	    /* N17 code for HQ-310258 by zhangzhijian5 at 2023/7/29 end */
         }
     }
     mode = Touch_Edge_Filter;
@@ -369,25 +366,3 @@ int fts_init_lockdown_info(u8 *buf)
     return 0;
 }
 /* N17 code for HQ-299728 by liunianliang at 2023/6/15 end */
-
-/* N17 code for HQ-307700 by p-xionglei6 at 2023.07.24 start */
-static int fts_touch_edge_mode_set(int value)
-{
-    int ret = 0;
-
-    if ((value != ORIENTATION_0_OR_180) && (value != NORMAL_ORIENTATION_90) &&
-        value != NORMAL_ORIENTATION_270) {
-        FTS_ERROR("not support edge value: %d", value);
-        return ret;
-    }
-
-    if (fts_data->edge_mode != value) {
-        ret = fts_write_reg(FTS_REG_EDGE_MODE_EN, value);
-        if (ret >= 0) {
-            fts_data->edge_mode = value;
-            FTS_DEBUG("MODE_EDGE switch to %d successfully !", fts_data->edge_mode);
-        }
-    }
-    return ret;
-}
-/* N17 code for HQ-307700 by p-xionglei6 at 2023.07.24 end */

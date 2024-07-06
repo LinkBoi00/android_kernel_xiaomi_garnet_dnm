@@ -49,17 +49,9 @@
 #endif //CONFIG_DRM
 #include "focaltech_core.h"
 
-#include "../../../gpu/drm/mediatek/mediatek_v2/mtk_disp_notify.h"
-
 /* N17 code for HQ-290835 by liunianliang at 2023/6/12 start */
 #include "../xiaomi/xiaomi_touch.h"
 /* N17 code for HQ-290835 by liunianliang at 2023/6/12 end */
-
-/* N17 code for HQ-301859 by liunianliang at 2023/06/30 start */
-#if IS_ENABLED(CONFIG_MI_DISP_NOTIFIER)
-#include "../../../gpu/drm/mediatek/mediatek_v2/mi_disp/mi_disp_notifier.h"
-#endif
-/* N17 code for HQ-301859 by liunianliang at 2023/06/30 end */
 
 /*****************************************************************************
 * Private constant and macro definitions using #define
@@ -2165,21 +2157,6 @@ static void fts_palm_mode_recovery(struct fts_ts_data *ts_data)
         FTS_ERROR("set palm sensor cmd failed: %d", ts_data->palm_sensor_switch);
 }
 
-/* N17 code for HQ-310258 by zhangzhijian5 at 2023/7/29 start */
-static int fts_touch_hdle_mode_set(bool value)
-{
-    int ret = 0;
-
-    ret = fts_write_reg(FTS_REG_HDLEMODE, value);
-    if (ret >= 0)
-        FTS_DEBUG("set hdle mode to %d successfully !", value);
-    else
-        FTS_ERROR("send hdle mode cmd failed : %d", value);
-
-    return ret;
-}
-/* N17 code for HQ-310258 by zhangzhijian5 at 2023/7/29 end */
-
 /* This is strange, but it's ok */
 /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */
 #include "focaltech_mi_custom.c"
@@ -2205,14 +2182,6 @@ static void fts_init_xiaomi_touchfeature(struct fts_ts_data *ts_data)
     xiaomi_touch_interfaces.panel_display_read = fts_panel_display_read;
     xiaomi_touch_interfaces.touch_vendor_read = fts_touch_vendor_read;
     /* N17 code for HQ-299728 by liunianliang at 2023/6/15 end */
-
-    /* N17 code for HQ-307700 by p-xionglei6 at 2023.07.24 start */
-    xiaomi_touch_interfaces.touch_edge_mode_set = fts_touch_edge_mode_set;
-    /* N17 code for HQ-307700 by p-xionglei6 at 2023.07.24 end */
-
-    /* N17 code for HQ-310258 by zhangzhijian5 at 2023/7/29 start */
-    xiaomi_touch_interfaces.touch_hdle_mode_set = fts_touch_hdle_mode_set;
-    /* N17 code for HQ-310258 by zhangzhijian5 at 2023/7/29 end */
 
     xiaomitouch_register_modedata(0, &xiaomi_touch_interfaces);
 }
