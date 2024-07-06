@@ -287,10 +287,7 @@
 /*
  * Numbers of modules support
  */
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 start */
-/* N17 code for HQ-299514 by jiangyue at 2023/6/25 start */
 #define FTS_GET_MODULE_NUM                      2
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 end */
 
 /*
  * module_id: mean vendor_id generally, also maybe gpio or lcm_id...
@@ -299,9 +296,7 @@
  * FTS_GET_MODULE_NUM >= 2, compatible with FTS_MODULE2_ID
  * FTS_GET_MODULE_NUM >= 3, compatible with FTS_MODULE3_ID
  */
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 start */
-#define FTS_MODULE_ID                           0xE0
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 end */
+#define FTS_MODULE_ID                           0x5F
 #define FTS_MODULE2_ID                          0x8D
 #define FTS_MODULE3_ID                          0x0000
 
@@ -313,12 +308,9 @@
  * You should rename fw to "focaltech_ts_fw_tianma", and push it into
  * etc/firmware or by customers
  */
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 start */
-#define FTS_MODULE_NAME                         "CSOT"
-/* N17 code for HQ-291087 by liunianliang at 2023/5/29 end */
+#define FTS_MODULE_NAME                         "GVO"
 #define FTS_MODULE2_NAME                        "TianMa"
 #define FTS_MODULE3_NAME                        ""
-/* N17 code for HQ-299514 by jiangyue at 2023/6/25 end */
 
 /*
  * FW.i file for auto upgrade, you must replace it with your own

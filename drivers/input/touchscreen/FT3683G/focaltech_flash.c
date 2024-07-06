@@ -1945,25 +1945,8 @@ static int fts_fwupg_get_module_info(struct fts_upgrade *upg)
             }
         }
         if (i >= FTS_GET_MODULE_NUM) {
-	    /* N17 code for HQ-310974 by xionglei6 at 2023/08/14 start */
-            if (tp_vendor) {
-                if (strcmp(tp_vendor, FTS_MODULE_NAME) == 0) {
-                    info = &module_list[FTS_CSOT_PANLE_INDEX];
-                    upg->module_id = info->id;
-                    FTS_INFO("focaltech tp, vendor is %s !!!", tp_vendor);
-                } else if (strcmp(tp_vendor, FTS_MODULE2_NAME) == 0) {
-                    info = &module_list[FTS_TianMa_PANLE_INDEX];
-                    upg->module_id = info->id;
-                    FTS_INFO("focaltech tp, vendor is %s !!!", tp_vendor);
-                } else {
-                    FTS_ERROR("not focaltech tp!!!\n");
-                    return -ENODATA;
-                }
-            } else {
-                    FTS_ERROR("no module id match, don't get file");
-                    return -ENODATA;
-            }
-	    /* N17 code for HQ-310974 by xionglei6 at 2023/08/14 end */
+            FTS_ERROR("no module id match, don't get file");
+            return -ENODATA;
         }
     }
 
