@@ -304,7 +304,6 @@ struct fts_ts_data {
 
     /* N17 code for HQ-290835 by liunianliang at 2023/6/12 start */
     struct mutex cmd_update_mutex;
-    int palm_sensor_switch;
     /* N17 code for HQ-290835 by liunianliang at 2023/6/12 end */
 
     /* N17 code for HQ-299546 by liunianliang at 2023/6/13 start */

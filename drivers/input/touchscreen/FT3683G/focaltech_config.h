@@ -215,7 +215,7 @@
  * enable it for debug, disable it for release
  */
 /* N17 code for HQ-305745 by zengqinghong1 at 2023/09/12 start */
-#define FTS_DEBUG_EN                            0
+#define FTS_DEBUG_EN                            1
 /* N17 code for HQ-305745 by zengqinghong1 at 2023/09/12 end */
 
 /*
