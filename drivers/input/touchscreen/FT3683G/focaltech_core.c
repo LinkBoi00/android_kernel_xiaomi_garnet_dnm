@@ -1924,6 +1924,12 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
         FTS_ERROR("Unable to get fod-y-size, please check dts");
     else
         FTS_INFO("Read fod-y-size: %d", pdata->fod_y_size);
+
+    /* HACK: set de-normalized values to fod variables [TO-DROP] */
+    pdata->fod_lx = 8070;
+    pdata->fod_ly = 37365;
+    pdata->fod_x_size = 3410;
+    pdata->fod_y_size = 3275;
 #endif
 
     FTS_FUNC_EXIT();
