@@ -538,6 +538,22 @@ static int fts_input_report_key(struct fts_ts_data *ts_data, struct ts_event *ke
     return -EINVAL;
 }
 
+#if IS_ENABLED(FTS_FOD_EN)
+static bool fts_is_in_fodarea(int x, int y)
+{
+	if (!fts_data)
+		return false;
+
+	if ((x > fts_data->pdata->fod_lx &&
+	     x < fts_data->pdata->fod_lx + fts_data->pdata->fod_x_size) &&
+	    (y > fts_data->pdata->fod_ly &&
+	     y < fts_data->pdata->fod_ly + fts_data->pdata->fod_y_size))
+		return true;
+	else
+		return false;
+}
+#endif
+
 #if FTS_MT_PROTOCOL_B_EN
 static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *events)
 {
@@ -581,6 +597,11 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
             touch_point_pre &= ~(1 << events[i].id);
             if (ts_data->log_level >= 1) FTS_DEBUG("[B]P%d UP!", events[i].id);
         }
+
+#if IS_ENABLED(FTS_FOD_EN)
+        if (fts_is_in_fodarea(events[ts_data->touch_event_num-1].x, events[ts_data->touch_event_num-1].y))
+            update_fod_press_status(1);
+#endif
     }
 
     if (unlikely(touch_point_pre ^ touch_down_point_cur)) {
@@ -599,6 +620,9 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
         if (ts_data->touch_points && (ts_data->log_level >= 1))
             FTS_DEBUG("[B]Points All Up!");
         input_report_key(input_dev, BTN_TOUCH, 0);
+#if IS_ENABLED(FTS_FOD_EN)
+        update_fod_press_status(0);
+#endif
     }
 
     ts_data->touch_points = touch_down_point_cur;
@@ -1874,6 +1898,33 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
         return ret;
     }
     /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
+    
+#if IS_ENABLED(FTS_FOD_EN)
+    ret = of_property_read_u32(np, "focaltech,fod-lx", &pdata->fod_lx);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-lx, please check dts");
+
+    else
+        FTS_INFO("Read fod_lx: %d", pdata->fod_lx);
+
+    ret = of_property_read_u32(np, "focaltech,fod-ly", &pdata->fod_ly);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-ly, please check dts");
+    else
+        FTS_INFO("Read fod_ly: %d", pdata->fod_ly);
+
+    ret = of_property_read_u32(np, "focaltech,fod-x-size", &pdata->fod_x_size);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-x-size, please check dts");
+    else
+        FTS_INFO("Read fod-x-size: %d", pdata->fod_x_size);
+
+    ret = of_property_read_u32(np, "focaltech,fod-y-size", &pdata->fod_y_size);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-y-size, please check dts");
+    else
+        FTS_INFO("Read fod-y-size: %d", pdata->fod_y_size);
+#endif
 
     FTS_FUNC_EXIT();
     return 0;
