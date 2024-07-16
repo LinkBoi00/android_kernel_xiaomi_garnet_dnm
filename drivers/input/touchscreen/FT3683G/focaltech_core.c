@@ -1875,6 +1875,38 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
     }
     /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
 
+    pdata->support_fod = of_property_read_bool(np, "focaltech,support-fod");
+    FTS_DEBUG("Read fod_support: %d", pdata->support_fod);
+    if (!pdata->support_fod)
+        FTS_INFO("FOD support is disabled from device tree");
+
+#if IS_ENABLED(FTS_FOD_EN)
+    ret = of_property_read_u32(np, "focaltech,fod-lx", &pdata->fod_lx);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-lx, please check dts");
+
+    else
+        FTS_INFO("Read fod_lx: %d", pdata->fod_lx);
+
+    ret = of_property_read_u32(np, "focaltech,fod-ly", &pdata->fod_ly);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-ly, please check dts");
+    else
+        FTS_INFO("Read fod_ly: %d", pdata->fod_ly);
+
+    ret = of_property_read_u32(np, "focaltech,fod-x-size", &pdata->fod_x_size);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-x-size, please check dts");
+    else
+        FTS_INFO("Read fod-x-size: %d", pdata->fod_x_size);
+
+    ret = of_property_read_u32(np, "focaltech,fod-y-size", &pdata->fod_y_size);
+    if (ret < 0)
+        FTS_ERROR("Unable to get fod-y-size, please check dts");
+    else
+        FTS_INFO("Read fod-y-size: %d", pdata->fod_y_size);
+#endif
+
     FTS_FUNC_EXIT();
     return 0;
 }
