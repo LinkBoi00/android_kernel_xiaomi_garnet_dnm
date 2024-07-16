@@ -538,6 +538,22 @@ static int fts_input_report_key(struct fts_ts_data *ts_data, struct ts_event *ke
     return -EINVAL;
 }
 
+#if IS_ENABLED(FTS_FOD_EN)
+static bool fts_is_in_fodarea(int x, int y)
+{
+	if (!fts_data)
+		return false;
+
+	if ((x > fts_data->pdata->fod_lx &&
+	     x < fts_data->pdata->fod_lx + fts_data->pdata->fod_x_size) &&
+	    (y > fts_data->pdata->fod_ly &&
+	     y < fts_data->pdata->fod_ly + fts_data->pdata->fod_y_size))
+		return true;
+	else
+		return false;
+}
+#endif
+
 #if FTS_MT_PROTOCOL_B_EN
 static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *events)
 {
@@ -581,6 +597,11 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
             touch_point_pre &= ~(1 << events[i].id);
             if (ts_data->log_level >= 1) FTS_DEBUG("[B]P%d UP!", events[i].id);
         }
+
+#if IS_ENABLED(FTS_FOD_EN)
+        if (fts_is_in_fodarea(events[ts_data->touch_event_num-1].x, events[ts_data->touch_event_num-1].y))
+            update_fod_press_status(1);
+#endif
     }
 
     if (unlikely(touch_point_pre ^ touch_down_point_cur)) {
@@ -599,6 +620,9 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
         if (ts_data->touch_points && (ts_data->log_level >= 1))
             FTS_DEBUG("[B]Points All Up!");
         input_report_key(input_dev, BTN_TOUCH, 0);
+#if IS_ENABLED(FTS_FOD_EN)
+        update_fod_press_status(0);
+#endif
     }
 
     ts_data->touch_points = touch_down_point_cur;
