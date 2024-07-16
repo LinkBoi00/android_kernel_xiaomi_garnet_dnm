@@ -601,6 +601,8 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
 #if IS_ENABLED(FTS_FOD_EN)
         if (fts_is_in_fodarea(events[ts_data->touch_event_num-1].x, events[ts_data->touch_event_num-1].y))
             update_fod_press_status(1);
+        else
+            update_fod_press_status(0);
 #endif
     }
 
