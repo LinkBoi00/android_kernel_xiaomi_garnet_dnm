@@ -185,6 +185,12 @@ static int fts_set_cur_value(int mode, int value)
         return 0;
     }
 
+    if ((mode == Touch_Fod_Enable || mode == THP_FOD_DOWNUP_CTL) && value >= 0) {
+        FTS_INFO("Mode:FOD  fod_status = %d", value);
+        fts_data->pdata->fod_status = value;
+        return 0;
+    }
+
     if (mode == Touch_Expert_Mode) {
         FTS_INFO("Enter Mode:Expert_Mode");
         fts_data->is_expert_mode = true;

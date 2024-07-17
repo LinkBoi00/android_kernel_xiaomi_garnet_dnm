@@ -192,6 +192,7 @@ struct fts_ts_platform_data {
     /* N17 code for HQ-299546 by liunianliang at 2023/6/13 end */
 
     bool support_fod;
+    int fod_status;
     u32 fod_lx;
     u32 fod_ly;
     u32 fod_x_size;

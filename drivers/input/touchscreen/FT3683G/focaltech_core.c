@@ -552,6 +552,21 @@ static bool fts_is_in_fodarea(int x, int y)
 	else
 		return false;
 }
+
+static bool fts_check_fod_status(void)
+{
+/* fod status = -1 as default value, means fingerprint is not enabled*
+ * fod_status = 100 as all fingers in the system is deleted
+ * fod_status = 0 means fingerpirint is not enabled
+ * fod_status = 1 means fingerprint is in authentication
+ * fod_status = 2 means fingerprint is in enroll
+ * fod_status = 3 means fingerprint is to be set when suspend
+ */
+	if (fts_data->pdata->fod_status == 1 || fts_data->pdata->fod_status == 2)
+		return true;
+	else
+		return false;
+}
 #endif
 
 #if FTS_MT_PROTOCOL_B_EN
@@ -599,7 +614,7 @@ static int fts_input_report_b(struct fts_ts_data *ts_data, struct ts_event *even
         }
 
 #if IS_ENABLED(FTS_FOD_EN)
-        if (fts_is_in_fodarea(events[ts_data->touch_event_num-1].x, events[ts_data->touch_event_num-1].y))
+        if (fts_is_in_fodarea(events[ts_data->touch_event_num-1].x, events[ts_data->touch_event_num-1].y) && fts_check_fod_status())
             update_fod_press_status(1);
         else
             update_fod_press_status(0);
@@ -2130,6 +2145,8 @@ static void fts_init_xiaomi_touchfeature(struct fts_ts_data *ts_data)
     xiaomi_touch_interfaces.panel_display_read = fts_panel_display_read;
     xiaomi_touch_interfaces.touch_vendor_read = fts_touch_vendor_read;
     /* N17 code for HQ-299728 by liunianliang at 2023/6/15 end */
+
+    ts_data->pdata->fod_status = -1;
 
     xiaomitouch_register_modedata(0, &xiaomi_touch_interfaces);
 }
