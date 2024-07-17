@@ -2130,6 +2130,8 @@ static void fts_init_xiaomi_touchfeature(struct fts_ts_data *ts_data)
     xiaomi_touch_interfaces.panel_display_read = fts_panel_display_read;
     xiaomi_touch_interfaces.touch_vendor_read = fts_touch_vendor_read;
     /* N17 code for HQ-299728 by liunianliang at 2023/6/15 end */
+
+    xiaomitouch_register_modedata(0, &xiaomi_touch_interfaces);
 }
 /* N17 code for HQ-290835 by liunianliang at 2023/6/12 end */
 
